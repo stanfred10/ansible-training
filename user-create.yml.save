@@ -1,0 +1,13 @@
+ fhlkgjuuub lkc jf hj ghghc---
+- name: 'Create user'
+  hosts: localhost
+  become: true
+  tasks:
+  - name: 'create new user named Thato'
+    user: 
+      name: 'Thato'
+      state: present
+  - name: "copy files to new user"
+    copy:
+      src: "~/create-user/user-create.yml" 
+      dest: "~/myfolder"

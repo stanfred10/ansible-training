@@ -1,0 +1,11 @@
+---
+- name: 'Install angular on Debian'
+  hosts: localhost
+  become: true
+  tasks:
+   - name: 'create angular app'
+     package: 
+       name: nodejs
+       state: present
+     when: ansible_facts['distribution'] =='Debian'
+

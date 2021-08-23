@@ -1,0 +1,9 @@
+---
+ - name: 'This playbook list the distributions where my playbook '
+   hosts: localhost
+   become: true
+   tasks:
+   - name: 'Create new user named'
+     shell: "echo {{ansible_facts['distribution']}} > list_of_distributions.txt"
+    # loop: "{{ansible_facts[distribution]}}"
+     when: ansible_facts['distribution'] == 'Debian'

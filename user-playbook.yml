@@ -1,0 +1,10 @@
+--- 
+- name: 'Create new User'
+  hosts: localhost
+  become: true
+  tasks:
+  - name: 'Create new user named playbook-user'
+    user:
+      name: 'playbook-player'
+      password: '1234'
+      state: present

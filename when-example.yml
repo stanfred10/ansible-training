@@ -1,0 +1,21 @@
+---
+ - name: 'This playbook creates new multiple users'
+   hosts: localhost
+   become: true
+   vars:
+     existing_username:
+       - thato
+       - leo
+       - james
+       - leandro
+     new_usernames:
+       - lebo
+       - eric
+       -peter
+   tasks:
+   - name: 'Create new user named {{ item }}'
+     loop: '{{username}}'
+     user:
+       name: '{{ item }}'
+       state: present
+     loop: '{{usernames}}'
