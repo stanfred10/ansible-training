@@ -1,13 +1,13 @@
 ---
-- name: 'Create user'
+- name: 'Create another user'
   hosts: localhost
   become: true
   tasks:
-  - name: 'create new user named Thato'
+  - name: 'create new user named Ricardo'
     user: 
-      name: 'Thato'
+      name: 'Ricardo'
       state: present
   - name: "copy files to new user"
-    copy:
-      src: "~/create-user/user-create.yml" 
-      dest: "~/myfolder"
+    file:
+      path: /home/Ricardo
+      state: directory

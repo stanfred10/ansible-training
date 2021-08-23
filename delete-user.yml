@@ -1,0 +1,13 @@
+---
+- name: 'Delete a user'
+  hosts: localhost
+  become: true
+  tasks:
+  - name: 'Delete a user named Ricardo'
+    user: 
+      name: 'Ricardo'
+      state: absent
+  - name: "delete directory called Ricardo"
+    file:
+      path: /home/Ricardo
+      state: absent
