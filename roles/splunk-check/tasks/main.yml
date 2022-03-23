@@ -1,0 +1,231 @@
+
+  ### Check Splunk Status
+  - name: Check if Splunk Forwarder installed via YUM
+    yum:
+      list: splunkforwarder-*
+    register: yum_splunk_forwarder_present
+    tags: check-version, status
+    failed_when: no
+
+  - name: Check if /opt/splunkforwarder/ path is present
+    file:
+      path: /opt/splunkforwarder/bin/splunk
+      state: file
+    register: splunk_forwarder_path_present
+    ignore_errors: true
+    tags: check-version
+
+ #Check splunk version
+  - name: Check Splunk Version
+    shell: /opt/splunkforwarder/bin/splunk -version
+    register: ver
+    ignore_errors: true
+    tags: check-version, installation
+
+  - name: Stop and remove Splunk if existing
+    block:  
+    ### Stop and remove Splunk if existing
+    - name: Stop Splunk Forwarder if exists at '/opt/splunkforwarder/' if present
+      command: /opt/splunkforwarder/bin/splunk stop
+      ignore_errors: true
+  
+    - name: Disable Splunk Forwarder boot start servcie for '/opt/splunkforwarder/' if present
+      command: /opt/splunkforwarder/bin/splunk disable boot-start
+      ignore_errors: true
+
+    - name: Stop Splunk Forwarder if exists at '/opt/software/splunkforwarder/' if present
+      command: /opt/software/splunkforwarder/bin/splunk stop
+      ignore_errors: true
+  
+    - name: Disable Splunk Forwarder boot start servcie for '/opt/software/splunkforwarder/' if present
+      command: /opt/software/splunkforwarder/bin/splunk disable boot-start
+      ignore_errors: true
+  
+    - name: Stop Splunk Forwarder if exists at '/opt/software/splunk/splunkforwarder/' if present
+      command: /opt/software/splunk/splunkforwarder/bin/splunk stop
+      ignore_errors: true
+  
+    - name: Disable Splunk Forwarder boot start servcie for '/opt/software/splunk/splunkforwarder/' if present
+      command: /opt/software/splunk/splunkforwarder/bin/splunk disable boot-start
+      ignore_errors: true
+   
+    - name: Stop Splunk Forwarder if exists at '/opt/splunk/splunkforwarder/' if present
+      command: /opt/splunk/splunkforwarder/bin/splunk stop
+      ignore_errors: true
+  
+    - name: Disable Splunk Forwarder boot start servcie for '/opt/splunk/splunkforwarder/' if present
+      command: /opt/splunk/splunkforwarder/bin/splunk disable boot-start
+      ignore_errors: true
+    when: ver.stdout_lines is not regex("Splunk Universal Forwarder {{ splunk_major_ver }}")
+    tags: deletion, installation
+
+  ### Remove previous install and configs
+  - name: remove previous install and configs
+    block:
+    - name: Remove previous Yum installs of Splunk Forwarder if correct version not found
+      yum:
+        name: splunkforwarder
+        state: absent
+      ignore_errors: true
+    
+    - name: Remove previous Splunk installation directories at '/opt/splunkforwarder/'
+      file:
+        state: absent 
+        path: /opt/splunkforwarder/
+
+    - name: Remove previous Splunk installation directories at '/opt/software/splunkforwarder/'
+      file:
+        state: absent 
+        path: /opt/software/splunkforwarder/
+      ignore_errors: true
+  
+    - name: Remove previous Splunk installation directories at '/opt/software/splunk/splunkforwarder/'
+      file:
+        state: absent 
+        path: /opt/software/splunk/splunkforwarder/
+      ignore_errors: true
+  
+    - name: Remove previous Splunk installation directories at '/opt/splunk/splunkforwarder/'
+      file:
+        state: absent 
+        path: /opt/splunk/splunkforwarder/
+      ignore_errors: true
+  
+    - name: Remove previous Splunk installation directories at '/opt/splunk/splunkforwarder/'
+      file:
+        state: absent 
+        path: /opt/splunk/splunkforwarder/
+      ignore_errors: true
+    when: ver.stdout_lines is not regex("Splunk Universal Forwarder {{ splunk_major_ver }}")
+    tags: remove
+
+  ######## Download splunk #################
+  - name: Download splunk rpm and config file, if not available
+    block:
+    - name: Create temp directory
+      file: 
+        path: /opt/tmp/splunkforwarder
+        state: directory
+        mode: 0755
+      tags: temp-directory
+      
+
+    - name: Download splunkforwarder rpm from S3
+      get_url:
+        url: https://s3.amazonaws.com/jcrew.shared.software/Splunk/{{ splunk_latest_rpm }}
+        dest: /opt/tmp/splunkforwarder/{{ splunk_latest_rpm }}
+        mode: 0744
+      
+
+    - name: Download and place the Splunk Forwarder deployment config from S3
+      get_url: 
+        url: https://s3.amazonaws.com/jcrew.shared.software/Splunk/all_deploymentclient.zip
+        dest: /opt/tmp/splunkforwarder/all_deploymentclient.zip
+        mode: 0744
+      
+    when: ver.stdout_lines is not regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match", "installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False)
+    tags: installation, download
+
+  ### Install latest Splunk Forwarder and base config when Splunk Server is not present or not latest version
+  - name: Install / update Splunk
+    block:  
+    - name: Install / update Splunk
+      yum:
+        name: /opt/tmp/splunkforwarder/{{ splunk_latest_rpm }}
+        state: latest
+        disable_gpg_check: yes
+      
+    - name: unzip to new folder
+      unarchive:
+        src:  /opt/tmp/splunkforwarder/all_deploymentclient.zip
+        dest: /opt/splunkforwarder/etc/apps/
+        mode: 0755
+        owner: splunk
+        group: splunk
+        remote_src: yes
+
+    - name: Start splunk to accept the licence
+      command: /opt/splunkforwarder/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd '6g/u9zJvG2uT'
+      ignore_errors: true
+  
+    - name: Configure to run as service
+      command: /opt/splunkforwarder/bin/splunk enable boot-start
+      ignore_errors: true
+
+    - name: Stop Splunk
+      command: /opt/splunkforwarder/bin/splunk stop
+
+    - name: Prepare Splunk for base image
+      command: /opt/splunkforwarder/bin/splunk clone-prep-clear-config
+    when: ver.stdout_lines is not regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match", "installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False)
+    tags: update
+
+  ### Enable splunk services
+  - name: enabled and restart splunk service
+    block:
+    - name: Enable SplunkForwarder Service
+      service:
+        name: SplunkForwarder
+        enabled: true
+      ignore_errors: true
+  
+    - name: Start SplunkForwarder Service
+      service:
+        name: SplunkForwarder
+        state: restarted
+      ignore_errors: true
+  
+    - name: Enable SplunkForwarder Service
+      service:
+        name: splunk
+        enabled: true
+      ignore_errors: true
+  
+    - name: Start SplunkForwarder Service
+      service:
+        name: splunk
+        state: restarted
+      ignore_errors: true
+
+    - name: Clean-up temp file
+      file:
+        state: absent
+        path: /opt/tmp/splunkforwarder/
+      ignore_errors: true
+
+    # Debugging changes made to splunk package
+    - name: Debugging changes
+      debug:
+        msg: "Package name splunkforwarder-{{splunk_major_ver}} NOT found and was installed."
+      when: not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match", "installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False)
+      
+    - name: Debugging changes
+      debug:
+        msg: "Package name {{ver.stdout_lines}} was found. Package was updated with new package splunkforwarder-{{splunk_major_ver}}"
+      when: ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match", "installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) and ver.stdout_lines is not regex("{{ splunk_major_ver }}")
+
+    when: ver.stdout_lines is not regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match", "installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False)
+    tags: enable-service
+
+#Check splunk status
+  - name: Splunk running status
+    shell: /opt/splunkforwarder/bin/splunk status
+    ignore_errors: true
+    register: splunk
+    tags: status 
+
+  - name: Start SplunkForwarder and Splunk Service
+    block:
+    - name: Start SplunkForwarder Service
+      service:
+        name: SplunkForwarder
+        state: restarted
+      ignore_errors: true
+
+    - name: Starting splunk service
+      service:
+        name: splunk
+        state: restarted
+      ignore_errors: true
+    when: splunk.rc != 0
+    tags: start-service

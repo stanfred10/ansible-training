@@ -1,0 +1,6 @@
+## Ansible Hosts File for Practice
+[web_servers]
+34.207.100.255 ansible_user=ec2-user
+3.81.202.121 ansible_user=ec2-user
+54.145.74.145 ansible_user=ec2-user
+

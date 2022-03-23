@@ -1,0 +1,12 @@
+---
+# vars file for test-role-1
+  ansible_ssh_user: unixops
+  ansible_ssh_private_key_file: /home/unixops/.ssh/unixops.pem
+  ansible_ssh_extra_args: '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+  force: 'false'
+  
+  # splunk latest version
+  splunk_latest_rpm: splunkforwarder-{{splunk_major_ver}}-{{splunk_minor_ver}}-linux-2.6-x86_64.rpm
+  # splunkforwarder-8.1.0.1-24fd52428b5a-linux-2.6-x86_64.rpm
+  # splunkforwarder-8.1.1-08187535c166-linux-2.6-x86_64.rpm
+
