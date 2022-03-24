@@ -1,5 +1,6 @@
 
   ### Check Splunk Status
+
   - name: Check if Splunk Forwarder installed via YUM
     yum:
       list: splunkforwarder-*
@@ -20,7 +21,7 @@
     shell: /opt/splunkforwarder/bin/splunk -version
     register: ver
     ignore_errors: true
-    tags: check-version, installation
+    tags: check-version, installation, update
 
   - name: Stop and remove Splunk if existing
     block:  

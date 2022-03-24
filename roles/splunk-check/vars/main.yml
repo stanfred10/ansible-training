@@ -10,3 +10,7 @@
   # splunkforwarder-8.1.0.1-24fd52428b5a-linux-2.6-x86_64.rpm
   # splunkforwarder-8.1.1-08187535c166-linux-2.6-x86_64.rpm
 
+  splunk_major_ver: 8.1.1 
+  splunk_minor_ver: 08187535c166 
+  
+
