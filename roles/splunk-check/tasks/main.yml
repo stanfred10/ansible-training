@@ -1,11 +1,11 @@
 
   ### Check Splunk Status
-
+ 
   - name: Check if Splunk Forwarder installed via YUM
     yum:
       list: splunkforwarder-*
     register: yum_splunk_forwarder_present
-    tags: check-version, status
+    tags: consistency-check
     failed_when: no
 
   - name: Check if /opt/splunkforwarder/ path is present
@@ -14,14 +14,14 @@
       state: file
     register: splunk_forwarder_path_present
     ignore_errors: true
-    tags: check-version
+    tags: consistency-check
 
- #Check splunk version
+  #Check splunk version
   - name: Check Splunk Version
     shell: /opt/splunkforwarder/bin/splunk -version
     register: ver
     ignore_errors: true
-    tags: check-version, installation, update
+    tags: consistency-check
 
   - name: Stop and remove Splunk if existing
     block:  
@@ -58,7 +58,7 @@
       command: /opt/splunk/splunkforwarder/bin/splunk disable boot-start
       ignore_errors: true
     when: ver.stdout_lines is not regex("Splunk Universal Forwarder {{ splunk_major_ver }}")
-    tags: deletion, installation
+    tags: deletion, consistency-check
 
   ### Remove previous install and configs
   - name: remove previous install and configs
@@ -98,7 +98,12 @@
         path: /opt/splunk/splunkforwarder/
       ignore_errors: true
     when: ver.stdout_lines is not regex("Splunk Universal Forwarder {{ splunk_major_ver }}")
-    tags: remove
+    tags: deletion, consistency-check
+
+  ### Prepare splunk services
+  - name: Prepare Splunk for base image
+    command: /opt/splunkforwarder/bin/splunk clone-prep-clear-config
+    tags: ami-build
 
   ######## Download splunk #################
   - name: Download splunk rpm and config file, if not available
@@ -108,7 +113,6 @@
         path: /opt/tmp/splunkforwarder
         state: directory
         mode: 0755
-      tags: temp-directory
       
 
     - name: Download splunkforwarder rpm from S3
@@ -116,16 +120,17 @@
         url: https://s3.amazonaws.com/jcrew.shared.software/Splunk/{{ splunk_latest_rpm }}
         dest: /opt/tmp/splunkforwarder/{{ splunk_latest_rpm }}
         mode: 0744
-      
+      failed_when: no
 
     - name: Download and place the Splunk Forwarder deployment config from S3
       get_url: 
         url: https://s3.amazonaws.com/jcrew.shared.software/Splunk/all_deploymentclient.zip
         dest: /opt/tmp/splunkforwarder/all_deploymentclient.zip
         mode: 0744
+      failed_when: no
       
     when: ver.stdout_lines is not regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match", "installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False)
-    tags: installation, download
+    tags: installation, ami-build
 
   ### Install latest Splunk Forwarder and base config when Splunk Server is not present or not latest version
   - name: Install / update Splunk
@@ -135,6 +140,7 @@
         name: /opt/tmp/splunkforwarder/{{ splunk_latest_rpm }}
         state: latest
         disable_gpg_check: yes
+      ignore_errors: true
       
     - name: unzip to new folder
       unarchive:
@@ -156,10 +162,9 @@
     - name: Stop Splunk
       command: /opt/splunkforwarder/bin/splunk stop
 
-    - name: Prepare Splunk for base image
-      command: /opt/splunkforwarder/bin/splunk clone-prep-clear-config
+    
     when: ver.stdout_lines is not regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match", "installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False)
-    tags: update
+    tags: update, ami-build
 
   ### Enable splunk services
   - name: enabled and restart splunk service
@@ -188,16 +193,11 @@
         state: restarted
       ignore_errors: true
 
-    - name: Clean-up temp file
-      file:
-        state: absent
-        path: /opt/tmp/splunkforwarder/
-      ignore_errors: true
-
     # Debugging changes made to splunk package
     - name: Debugging changes
       debug:
         msg: "Package name splunkforwarder-{{splunk_major_ver}} NOT found and was installed."
+      ignore_errors: true
       when: not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match", "installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False)
       
     - name: Debugging changes
@@ -208,12 +208,12 @@
     when: ver.stdout_lines is not regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match", "installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False)
     tags: enable-service
 
-#Check splunk status
+  #Check splunk status
   - name: Splunk running status
     shell: /opt/splunkforwarder/bin/splunk status
     ignore_errors: true
     register: splunk
-    tags: status 
+    tags: consistency-check 
 
   - name: Start SplunkForwarder and Splunk Service
     block:
@@ -229,4 +229,11 @@
         state: restarted
       ignore_errors: true
     when: splunk.rc != 0
-    tags: start-service
+    tags: consistency-check
+  
+  - name: Clean-up temp file
+    file:
+      state: absent
+      path: /opt/tmp/splunkforwarder/
+    ignore_errors: true
+    tags: ami-build, consistency-check

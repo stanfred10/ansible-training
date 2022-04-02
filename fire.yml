@@ -1,39 +1,42 @@
 ---
 # tasks file for fireeye-check
 
-
 # Checking fireEye package and version
-- name: check fireEye installed or not
-  shell: rpm -qa | grep xagt
-  register: pkg
-  ignore_errors: true
-  tags: Check-package, installation
+- name: Fireeye linux check
+  block:
+  - name: check fireEye installed or not
+    shell: rpm -qa | grep xagt
+    register: pkg
+    ignore_errors: true
+    
 
-- name: Check fireEye version
-  shell: "`which yum` list installed | grep xagt | awk '{print $2}' | cut -d'-' -f1"
-  register: ver
-  ignore_errors: true
-  when: pkg.rc == 0
-  tags: Check-version, installation
+  - name: Check fireEye version
+    shell: "`which yum` list installed | grep xagt | awk '{print $2}' | cut -d'-' -f1"
+    register: ver
+    ignore_errors: true
+    when: pkg.rc == 0
+    tags: Check-version, installation, consistency-check
+
 # Removing older version of fireye package
-- block:
-  - name: Uninstall the older version of fireeye
-    yum:
-      name: xagt
-      state: absent
-    failed_when: no
+- name: remove older version
+  block:
+    - name: Uninstall the older version of fireeye
+      yum:
+        name: xagt
+        state: absent
+      failed_when: no
 
-  - debug:
-      msg: "Package name xagt-{{ver.stdout}} was older and removed."
-  when: pkg.rc == 0 and ver.stdout_lines is not regex("{{ fe_ver }}") or force == 'true'
-  tags: Remove-older-version
-  
+    - debug:
+          msg: "Package name xagt-{{ver.stdout}} was older and removed."
+      when: pkg.rc == 0 and ver.stdout_lines is not regex("{{ fe_ver }}") or force == 'true'
+      tags: Remove-older-version, consistency-check
+    
 # Installing latest version of fireeye package
 - name: Install fireeye
   block: 
   - name: Make a directory for FireEye Agent
     file:
-      path: /opt/tmp/fireeye
+      path: /opt/tmp/fireeye-linux-check
       state: directory
       mode: 0744
 
@@ -61,8 +64,6 @@
   - name: Import the agent configuration file- '.json'
     shell: sudo /opt/fireeye/bin/xagt -i /opt/tmp/fireeye/agent_config.json
 
-  
-
 # Removing temp file location
   - name: Delete temp location for file copying
     file:
@@ -86,8 +87,8 @@
     failed_when: no
 
   when: pkg.rc != 0 or ver.stdout_lines is not regex("{{ fe_ver }}") or force == 'true'
-  tags: ami-build, installation
-
+  tags: enable-service, installation
+# Start the fireeye agent
 - name: Start the FireEye Agent Service
   service:
     name: xagt
@@ -106,4 +107,4 @@
       name: xagt
       state: restarted
     when: (xagt.rc != 0)
-    tags: start-service
+    tags: start-service, consitency-check

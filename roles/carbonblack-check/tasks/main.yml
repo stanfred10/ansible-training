@@ -1,2 +1,153 @@
 ---
 # tasks file for carbonblack-check
+
+# Check carbonblack agent
+- name: Check carbonblack agent
+  block: 
+  - name: check cb-psc-sensor package
+    shell:  rpm -qa | grep cb-psc-sensor
+    register: pkg
+    ignore_errors: true 
+    
+  - name: Check carbonblack version
+    shell: "`which yum` list installed cb-psc-sensor | grep cb-psc-sensor | awk '{print $2}' | cut -d'-' -f1"
+    register: ver
+    ignore_errors: true
+  tags: check-version, consistency-check
+
+# Uninstall older version of carbon black
+- name: uninstall
+  block:
+  - name: Uninstall the older version of carbon black
+    yum:
+      name: cb-psc-sensor
+      state: absent
+  
+  - debug:
+      msg: "Package name cb-psc-sensor-{{ver.stdout}} was older and removed."
+  ignore_errors: true
+  when: pkg.rc == 0 and ver.stdout_lines is not regex("{{ cb_major_ver }}") or force == 'true'
+  tags: uninstall-previous-versions, consistency-check
+
+# Download and install latest version of carbon black- cb-psc-sensor-"{{cb_major_ver}}"
+- name: Download and install latest version of carbon black
+  block:
+  - name: Create temp location for file copying
+    file:
+      path: /opt/tmp/carbonblack
+      state: directory
+      mode: 0744
+
+  - name: Extract Carbon Black Tarball for rhel and oracle linux
+    unarchive:
+      src: https://s3.amazonaws.com/jcrew.shared.software/CarbonBlack/cb-psc-sensor-rhel-{{ cb_psc }}.tgz
+      dest: /opt/tmp/carbonblack
+      remote_src: yes
+    when: ansible_distribution == 'RedHat' or ansible_distribution == 'OracleLinux'
+
+  - name: Extract Carbon Black Tarball for amazon linux 2
+    unarchive:
+      src: https://s3.amazonaws.com/jcrew.shared.software/CarbonBlack/cb-psc-sensor-amazon-linux-{{ cb_psc }}.tgz
+      dest: /opt/tmp/carbonblack
+      remote_src: yes
+    when: ansible_distribution == 'Amazon' and ansible_distribution_major_version == '2'
+
+  - name: Install rpm file on RHEL6 servers
+    yum:
+      name: /opt/tmp/carbonblack/cb-psc-sensor-rhel-{{ cb_psc }}/cb-psc-sensor-{{ cb_install }}.el6.x86_64.rpm
+      state: installed
+      disable_gpg_check: yes
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '6'
+
+  - name: Install rpm file on RHEL7 servers
+    yum:
+      name: /opt/tmp/carbonblack/cb-psc-sensor-rhel-{{ cb_psc }}/cb-psc-sensor-{{ cb_install }}.el7.x86_64.rpm
+      state: installed
+      disable_gpg_check: yes
+    when: (ansible_distribution == 'RedHat' or ansible_distribution == 'OracleLinux') and ansible_distribution_major_version == '7'
+  - name: Install rpm file on RHEL8 servers
+    yum:
+      name: /opt/tmp/carbonblack/cb-psc-sensor-rhel-{{ cb_psc }}/cb-psc-sensor-{{ cb_install }}.el8.x86_64.rpm
+      state: installed
+      disable_gpg_check: yes  
+    when: (ansible_distribution == 'RedHat' or ansible_distribution == 'OracleLinux') and ansible_distribution_major_version == '8'
+                                
+  - name: Install rpm file on Amazon servers
+    yum:
+      name: /opt/tmp/carbonblack/cb-psc-sensor-amazon-linux-{{ cb_psc }}/cb-psc-sensor-{{ cb_install }}.x86_64.rpm
+      state: installed
+      disable_gpg_check: yes
+    when: ansible_distribution == 'Amazon' and ansible_distribution_major_version == '2'
+
+  - name: Install the blades for rhel and oracle linux
+    shell: /opt/tmp/carbonblack/cb-psc-sensor-rhel-{{ cb_psc }}/blades/bladesUnpack.sh
+    when: ansible_distribution == 'RedHat' or ansible_distribution == 'OracleLinux'
+
+  # Post installation steps
+  - name: Install the blades for amazon linux 2
+    shell: /opt/tmp/carbonblack/cb-psc-sensor-amazon-linux-{{ cb_psc }}/blades/bladesUnpack.sh
+    when: ansible_distribution == 'Amazon' and ansible_distribution_major_version == '2'        
+                                
+  - name: Update the cfg.ini file with the v3.x+ company registration code
+    shell: /opt/carbonblack/psc/bin/cbagentd -d 'ZV8SPOO3W1MG!H6K1R5'
+    register: cbagentd_edit
+    failed_when: cbagentd_edit.rc != 1 and cbagentd_edit.rc != 0
+    when: not (ansible_distribution_major_version == '2018') 
+
+  # Remove temp file location
+  - name: Delete temp location for file copying
+    file:
+      path: /opt/tmp/carbonblack
+      state: absent
+    tags: ami-build, consistency-check
+                                
+  # Debug messages for changes
+  - name: Debugging changes
+    debug:
+      msg: "Package name cb-psc-sensor-{{cb_major_ver}} NOT found and was installed."
+    when: pkg.rc != 0 and not (ansible_distribution_major_version == '2018')
+
+  - name: Debugging changes
+    debug:
+      msg: "Package name cb-psc-sensor-{{ver.stdout}} was found. Package was updated with new package cb-psc-sensor-{{cb_major_ver}}"
+    when: pkg.rc == 0 and ver.stdout_lines is not regex("{{ cb_major_ver }}")
+
+  - name: Debugging changes
+    debug:
+      msg: "Package name cb-psc-sensor-{{cb_major_ver}} was installed through a FORCE installation."
+    when: force == 'true'
+  ignore_errors: true
+  when: pkg.rc != 0 or ver.stdout_lines is not regex("{{cb_major_ver}}") or force == 'true'
+  tags: ami-build
+
+# Check Carbon Black status
+- name: Carbon Black status
+  block:
+  - name: Check CB status for all distro except rhel6 & amazon
+    shell: systemctl status cbagentd
+    ignore_errors: true
+    register: cbs
+
+  - name: Starting carbon black for all distro except rhel6 & amazon
+    service:
+      name: cbagentd
+      state: restarted
+    when: (cbs.rc != 0)
+  when: not (ansible_distribution_major_version == '6' or ansible_distribution_major_version == '2018')
+  tags: check-status, consistency-check
+
+- name: Check CB status for rhel6
+  block:
+  - name: Check CB status for rhel6
+    shell: service cbagentd status
+    ignore_errors: true
+    register: cb
+
+  - name: Starting CB agent for rhel6 and amazon
+    service:
+      name: cbagentd
+      state: restarted
+    when: cb.stdout is not regex("running")
+  when: ansible_distribution_major_version == '6'
+  tags: consistency-check
+
