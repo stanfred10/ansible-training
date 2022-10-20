@@ -1,0 +1,19 @@
+---
+# tasks file for onge
+
+- name: Onge role block
+  block:
+  
+  - name: Onge tasks block
+    block:
+      
+    - name: onge task 1
+      debug:
+        msg: "hello world"
+      tags: cash
+
+    - name: onge task 2
+      debug:
+        msg: "hello sunnyside"
+      tags: hello
+  tags: Roles

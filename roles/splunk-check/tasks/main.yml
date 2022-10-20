@@ -25,7 +25,7 @@
 
   - name: Stop and remove Splunk if existing
     block:  
-    ### Stop and remove Splunk if existing
+      ### Stop and remove Splunk if existing
     - name: Stop Splunk Forwarder if exists at '/opt/splunkforwarder/' if present
       command: /opt/splunkforwarder/bin/splunk stop
       ignore_errors: true
@@ -113,6 +113,7 @@
         path: /opt/tmp/splunkforwarder
         state: directory
         mode: 0755
+      tags: temp
       
 
     - name: Download splunkforwarder rpm from S3

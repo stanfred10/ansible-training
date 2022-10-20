@@ -1,0 +1,28 @@
+---
+- name: "Playbook that creates users"
+  hosts: localhost  
+  connection: local
+  become: yes
+  vars:
+    users:
+      - name: Maria
+        username: maria
+      - name: Floyd
+        username: floyd
+
+  tasks:
+  - name: "Ensure Users exist"
+    user:
+      name: "{{ user.username }}"
+      comment: "{{ user.name }}"
+      shell: /bin/bash
+      state: present
+    become: true
+    loop: "{{ users }}"
+    loop_control:
+      loop_var: user
+
+  - name: "Delete a user"
+    user: 
+      name: "cleorese"
+      state: absent

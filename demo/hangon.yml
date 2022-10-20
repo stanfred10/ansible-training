@@ -1,0 +1,59 @@
+# Create Sysops location
+  - name: Create temp locationn for file copying
+    file:
+      path: /opt/tmp/splunkforwader
+      state: directory
+      mode: 0744
+  # Install and configure Splunk Universal Forwarder
+  # ----------------------------
+  - name: Install / update Splunk
+    yum:
+      name: "{{ splunkforwarder_url }}"
+      #name: https://s3.amazonaws.com/jcrew.shared.software/Splunk/splunkforwarder-7.3.5-86fd62efc3d7-linux-2.6-x86_64.rpm
+      #name: https://s3.amazonaws.com/jcrew.shared.software/Splunk/splunkforwarder-7.2.6-c0bf0f679ce9-linux-2.6-x86_64.rpm
+      state: latest
+
+  - name: Download and place the Splunk default forwarder config
+    get_url:
+      url: "{{ splunk_deployment_client_url }}"
+      dest: /opt/tmp/splunkforwader/all_deploymentclient.zip
+
+  - name: unzip to new folder
+    unarchive:
+      src:  /opt/tmp/splunkforwader/all_deploymentclient.zip
+      dest: /opt/splunkforwarder/etc/apps/
+      mode: 0755
+      owner: splunk
+      group: splunk
+      remote_src: yes
+
+  - name: Change splunkforwarder folder permissions
+    file:
+      path : /opt/splunkforwarder/
+      state: directory
+      owner : splunk
+      group : splunk
+      mode : 0750
+
+  - name: Start splunk to accept the licence
+    command: /opt/splunkforwarder/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd '6g/u9zJvG2uT'
+
+  - name: Configure to run as service
+    command: /opt/splunkforwarder/bin/splunk enable boot-start
+
+  - name: Stop Splunk
+    command: /opt/splunkforwarder/bin/splunk stop
+
+  - name: Prepare Splunk for base image
+    command: /opt/splunkforwarder/bin/splunk clone-prep-clear-config
+
+  - name: Disable Linux Service
+    service:
+      name: SplunkForwarder
+      enabled: false
+
+  ##### Clean up base image software temp files
+  - name: Clean-up temp files
+    file:
+      state: absent
+      path: /opt/tmp/splunkforwader

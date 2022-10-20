@@ -1,0 +1,68 @@
+---
+- name: Plays that install software
+  hosts: localhost 
+  become: true
+
+  tasks:
+  - name: install httpd please
+    apt:
+      name: httpd
+      state: present
+    failed_when: yes
+    
+  # - name: check nodejs package
+  #   shell: nodejs -v
+  #   register: pkg
+  #   ignore_errors: true
+
+  # - name: install python 3 please
+  #   apt:
+  #     name: python3
+  #     state: present
+    
+  # - debug:
+  #     msg: "Package name nodejs-{{ver.stdout}} was older and removed."
+  #   when: pkg.rc == 0 and ver.stdout_lines is not regex("{{ path_to_nodejs }}") or force == 'true'
+
+  # - name: check for existing nodejs install
+  #   stat:
+  #     path: "{{ path_to_nodejs }}"
+  #   register: result_a
+
+  # - name: Create temp directory
+  #   file: 
+  #     path: ../mansion
+  #     state: absent
+  #     mode: '0755'
+  #   become: true
+  #   tags: temp-directory
+    
+  # - name: check nodejs version
+  #   command: "{{ path_to_nodejs }} --version" 
+  #   register: result_b
+  #   when: "result_a.stat.exists"
+  #   # comment: "{{ result_a.stat.exists }}"
+  #   changed_when: False
+  #   failed_when: False
+    # shell: /bin/node -v
+    # debug:
+    #   msg: node -v
+    # register: ver
+    # ignore_errors: true
+  
+
+  # - name: "Populate service facts"
+  #   service_facts:
+  # - name: "see the service facts as they are"
+  #   debug:
+  #     msg: "{{ansible_facts.services}}"
+
+  # - name: install npm before angular
+  #   apt: 
+  #     name: npm
+
+  # - name: install Angular please
+  #   apt:
+  #     name: angular-cli
+  #     state: present
+

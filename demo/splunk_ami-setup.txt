@@ -1,0 +1,147 @@
+[root@al2_splnk_test_old_ver jcrew-praesignis]# ansible-playbook linux-check.yml -t ami-setup &> results.txt --extra-vars "splunk_major_ver=8.1.1 splunk_minor_ver=08187535c166 force=true"
+[root@al2_splnk_test_old_ver jcrew-praesignis]# cat results.txt
+[WARNING]: Unable to parse /home/praesignis/jcrew-praesignis/hosts as an inventory source
+[WARNING]: No inventory was parsed, only implicit localhost is available
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
+
+PLAY [linux-check-splunk] ***************************************************************************************************************************
+
+TASK [Gathering Facts] ******************************************************************************************************************************
+ok: [localhost]
+
+TASK [include_role : splunk-check] ******************************************************************************************************************
+[WARNING]: While constructing a mapping from /home/praesignis/jcrew-praesignis/roles/splunk-check/tasks/main.yml, line 3, column 5, found a
+duplicate dict key (tags). Using last defined value only.
+
+TASK [splunk-check : Check if Splunk Forwarder installed via YUM] ***********************************************************************************
+ok: [localhost]
+
+TASK [splunk-check : Check if /opt/splunkforwarder/ path is present] ********************************************************************************
+ok: [localhost]
+
+TASK [splunk-check : Check Splunk Version] **********************************************************************************************************
+changed: [localhost]
+
+TASK [splunk-check : Create temp directory] *********************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or force == 'true'
+changed: [localhost]
+
+TASK [splunk-check : Download splunkforwarder rpm from S3] ******************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or force == 'true'
+changed: [localhost]
+
+TASK [splunk-check : Download and place the Splunk Forwarder deployment config from S3] *************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or force == 'true'
+changed: [localhost]
+
+TASK [splunk-check : Install / update Splunk] *******************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or force == 'true'
+ok: [localhost]
+
+TASK [splunk-check : unzip to new folder] ***********************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or force == 'true'
+changed: [localhost]
+
+TASK [splunk-check : Start splunk to accept the licence] ********************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or force == 'true'
+changed: [localhost]
+
+TASK [splunk-check : Configure to run as service] ***************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or force == 'true'
+changed: [localhost]
+
+TASK [splunk-check : Stop Splunk] *******************************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or force == 'true'
+changed: [localhost]
+
+TASK [splunk-check : Disable Linux Service] *********************************************************************************************************
+changed: [localhost]
+
+TASK [splunk-check : Replace old deployer IP add with the new IP add] *******************************************************************************
+ok: [localhost]
+
+TASK [splunk-check : Enable SplunkForwarder Service] ************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or ip_add.changed or force == 'true'
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "Could not find the requested service SplunkForwarder: host"}
+...ignoring
+
+TASK [splunk-check : Start SplunkForwarder Service] *************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or ip_add.changed or force == 'true'
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "Could not find the requested service SplunkForwarder: host"}
+...ignoring
+
+TASK [splunk-check : Enable SplunkForwarder Service] ************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or ip_add.changed or force == 'true'
+changed: [localhost]
+
+TASK [splunk-check : Start SplunkForwarder Service] *************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or ip_add.changed or force == 'true'
+changed: [localhost]
+
+TASK [splunk-check : Debugging changes] *************************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or ip_add.changed or force == 'true'
+skipping: [localhost]
+
+TASK [splunk-check : Debugging changes] *************************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or ip_add.changed or force == 'true'
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found:
+((yum_splunk_forwarder_present.results | selectattr("yumstate", "match", "installed") | list | length >= 1 ) and
+splunk_forwarder_path_present.failed == False) and ver.stdout_lines is not regex("{{ splunk_major_ver }}") or force == 'true'
+ok: [localhost] => {
+    "msg": "Package name [u'Splunk Universal Forwarder 8.1.1 (build 08187535c166)'] was found. Package was updated with new package splunkforwarder-8.1.1"
+}
+
+TASK [splunk-check : Splunk running status] *********************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or ip_add.changed or force == 'true'
+changed: [localhost]
+
+TASK [splunk-check : Start SplunkForwarder Service] *************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or ip_add.changed or force == 'true'
+skipping: [localhost]
+
+TASK [splunk-check : Starting splunk service] *******************************************************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}. Found: ver.stdout_lines is not
+regex("Splunk Universal Forwarder {{ splunk_major_ver }}") or not ((yum_splunk_forwarder_present.results | selectattr("yumstate", "match",
+"installed") | list | length >= 1 ) and splunk_forwarder_path_present.failed == False) or ip_add.changed or force == 'true'
+skipping: [localhost]
+
+TASK [splunk-check : Clean-up temp file] ************************************************************************************************************
+changed: [localhost]
+
+TASK [splunk-check : Prepare Splunk for base image] *************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": true, "cmd": ["/opt/splunkforwarder/bin/splunk", "clone-prep-clear-config"], "delta": "0:00:00.322238", "end": "2022-05-18 06:29:51.038240", "msg": "non-zero return code", "rc": 23, "start": "2022-05-18 06:29:50.716002", "stderr": "Conf is currently being modified by process 14563.\ncouldn't run \"/opt/splunkforwarder/bin/splunkd\": No such file or directory", "stderr_lines": ["Conf is currently being modified by process 14563.", "couldn't run \"/opt/splunkforwarder/bin/splunkd\": No such file or directory"], "stdout": "", "stdout_lines": []}
+
+PLAY RECAP ******************************************************************************************************************************************
+localhost                  : ok=21   changed=13   unreachable=0    failed=1    skipped=3    rescued=0    ignored=2

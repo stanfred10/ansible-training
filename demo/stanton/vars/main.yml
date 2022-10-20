@@ -1,0 +1,11 @@
+---
+# vars file for stanton
+my_var: robert
+my_var2: stanton
+
+job: false
+job2: false
+deploy: false
+Roles: false
+
+force: false

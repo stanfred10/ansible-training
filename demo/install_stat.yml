@@ -1,0 +1,44 @@
+---
+- name: plays that install software
+  hosts: localhost
+  become: true
+  vars:
+    force: 'false'
+    nodejss: "{{v10.19.0}}" 
+  tasks:
+
+  - name: Check nodejs version
+    shell: 'nodejs -v'
+    register: ver
+    ignore_errors: true
+
+  - debug:
+      # msg: "version is less than {{nodejss}}"
+      msg: "version is less than {{ver.stdout_lines| string}}"
+
+  - name: uninstall nodejs please
+    apt:
+      name: nodejs
+      state: present
+    # when: ver.stdout_lines == "{{nodejss| float}}" or force == 'true'
+
+  # - name: install nodejs please
+  #   apt:
+  #     name: nodejs=4.2.6
+  #     state: present
+  #   when: ver.stdout_lines <= "{{nodejss}}" or force == 'true'
+
+  # - name: Check directory exist
+  #   ansible.builtin.stat:
+  #     path: ../check-folder/roles/splunk-check/defaults/main.yml
+  #   register: sym
+
+  # - name: Print a debug message
+  #   ansible.builtin.debug:
+  #     msg: "islnk is defined (path must exist)"
+  #   when: sym.stat.islnk is defined
+  
+  # - name: Print a debug message
+  #   ansible.builtin.debug:
+  #     msg: "islnk isn't defined (path doesn't exist)"
+  #   when: sym.stat.islnk is not defined

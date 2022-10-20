@@ -1,0 +1,34 @@
+---
+- hosts: 194.195.249.98
+  remote_user: root
+  # roles:
+  #     - {role: 'stanton',
+  #         job: true,
+  #         job2: false,
+  #         deploy: true,
+  #         temp_directory: false,
+  #         tags: ['job', 'temp_directory','deploy', 'job2']
+  #       }
+  tasks:
+  - include_role:
+      name: stanton
+    tags: Roles, job, job2
+
+  - include_role:
+      name: vayore
+    tags: Roles, money
+
+  - include_role:
+      name: onge
+    tags: Roles, cash
+
+  # - include_role:
+  #     name: stanton
+  #   vars:
+  #     job: false,
+  #     job2: true,
+  #     Roles: false,
+  #   tags: Roles, job, job2
+
+
+  

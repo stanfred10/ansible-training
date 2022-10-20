@@ -4,3 +4,5 @@
 3.81.202.121 ansible_user=ec2-user
 54.145.74.145 ansible_user=ec2-user
 
+[test_server]
+10.200.200.14 ansible_user=ec2-user

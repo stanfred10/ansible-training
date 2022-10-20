@@ -1,0 +1,36 @@
+---
+- name: plays that install software
+  hosts: localhost
+  become: true
+
+  tasks:
+  - name: Check directory exist
+    ansible.builtin.stat:
+      path: ../check-folder/roles/splunk-check/defaults/main.yml
+    register: sym
+
+  - name: Print a debug message
+    ansible.builtin.debug:
+      msg: "islnk is defined (path must exist)"
+    when: sym.stat.islnk is defined
+  
+  - name: Print a debug message
+    ansible.builtin.debug:
+      msg: "islnk isn't defined (path doesn't exist)"
+    when: sym.stat.islnk is not defined
+
+  # - name: Print a debug message
+  #   ansible.builtin.debug:
+  #     msg: "Path exists and is a symlink"
+  #   when: sym.stat.islnk is defined and sym.stat.islnk
+
+  # - name: Print a debug message
+  #   ansible.builtin.debug:
+  #     msg: "Path exists and isn't a symlink"
+  #   when: sym.stat.islnk is defined and sym.stat.islnk == False
+
+  # - include: ./_common/check-certs-renewable.yaml
+  #   when: st.stat.exists
+
+  # - include: ./_common/create-certs.yaml
+  #   when: not st.stat.exists

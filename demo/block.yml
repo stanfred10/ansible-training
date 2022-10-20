@@ -1,0 +1,38 @@
+---
+- name: Working with blocks
+  hosts: localhost
+  become: no
+  gather_facts: no
+
+  vars:
+        my_var: robert
+        my_var2: Stanton
+  tasks:
+    - name: Block 1
+      block:
+        - name: job 1
+          debug:
+            msg: "Job 1 is ran {{ my_var }}"
+          changed_when: yes
+        
+        - name: job 2
+          debug:
+            msg: "Job 2 is ran {{ my_var2 }}"
+          changed_when: yes
+        
+        - name: Block2
+          block:
+            - name: job 3
+              debug:
+                msg: "Job 3 is ran {{ my_var2 }}"
+      # when: my_var == robert
+      
+      when:
+        - yes
+      notify:
+        - x
+      
+  handlers:
+    - name: x
+      debug:
+        msg: "I am a handler"

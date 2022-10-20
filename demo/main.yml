@@ -1,0 +1,45 @@
+  - name: install nodejs please
+    apt:
+      name: nodejs
+      state: present
+  
+  # - name: check nodejs version
+  #   shell: /bin/node -v
+  #   register: index_file
+
+  # - name: output index_file var contents
+  #   debug:
+  #     msg: "{{ index_file }}"
+  #   # ignore_errors: true
+ 
+  - debug:
+      msg: "hello world"
+   
+
+  - name: Block 1
+    block:
+      - name: job 1
+        debug:
+          msg: "Job 1 has run {{ my_var }}"
+        changed_when: yes
+        
+      
+      - name: job 2
+        debug:
+          msg: "Job 2 has run {{ my_var2 }}"
+        changed_when: yes
+ 
+      - name: Block2
+        block:
+          - name: job 3
+            debug:
+              msg: "Job 3 has run {{ my_var2 }}"
+            
+      
+    when:
+      - yes
+    notify:
+      - x
+    
+ 
+      

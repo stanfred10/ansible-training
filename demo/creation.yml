@@ -1,0 +1,21 @@
+---
+- name: "create user"
+  hosts: locaolhost
+  connection: local
+  become: yes
+  vars:
+    users:
+      - name: Josua Lewis
+        username: josua
+  tasks:
+  - name: "Ensure Users exist"
+
+    user:
+      name: "{{ user.username }}"
+      comment: "{{ user.name }}"
+      shell: /bin/bash
+      state: present
+    become: true
+    loop: "{{ users }}"
+    loop_control:
+      loop_var: user

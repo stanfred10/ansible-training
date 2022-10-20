@@ -1,0 +1,43 @@
+---
+# tasks file for stanton
+
+- name: Stanton role block
+  block:
+
+  - name: Stanton tasks block
+    block:
+      - debug:
+          msg: "hello stan"
+        when: job
+
+      - name: Create temp directory
+        file: 
+          path: /demo/mansion
+          state: absent
+          mode: '0755'
+        become: true
+        when: job
+        
+
+      - name: Block 1
+        block:
+          - name: job 1
+            debug:
+              msg: "Job 1 has run {{ my_var }}"
+            changed_when: yes
+            when: job
+                      
+          - name: job 2
+            debug:
+              msg: "Job 2 has run {{ my_var2 }}"
+            changed_when: yes
+            when: job2 
+        when: job2 
+
+      - name: Block 2
+        block:
+          - name: job 3
+            debug:
+              msg: "Job 3 has run {{ my_var2 }}"
+            when: job
+  when: Roles

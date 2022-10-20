@@ -1,9 +1,9 @@
 ---
-# - name: linux-check-splunk
-#   hosts: localhost
-#   become: true
-#   roles:
-#     - splunk-check
+- name: linux-check-splunk
+  hosts: localhost
+  become: true
+  roles:
+    - splunk-check
 
 # - name: linux-check-carbonblack
 #   hosts: localhost
@@ -11,8 +11,8 @@
 #   roles:
 #     - carbonblack-check
 
-- name: linux-check-fireeye
-  hosts: localhost
-  become: true
-  roles:
-    - fireeye-check
+# - name: linux-check-fireeye
+#   hosts: localhost
+#   become: true
+#   roles:
+#     - fireeye-check

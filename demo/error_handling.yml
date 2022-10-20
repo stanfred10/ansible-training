@@ -1,0 +1,21 @@
+---
+- name: Working with blocks
+  hosts: all
+  become: no
+  gather_facts: no
+  vars:
+    my_var: sta
+
+  tasks:
+    - name: Block 1
+      block:
+        - name: job 1
+          debug:
+            msg: "Job 1 ran"
+          failed_when: yes
+        
+      rescue:
+        - name: job 2
+          debug:
+            msg: "job 2 ran"
+          changed_when: yes

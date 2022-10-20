@@ -1,0 +1,19 @@
+---
+# tasks file for vayore
+
+- name: Vayore role block
+  block:
+
+  - name: Vayore tasks block
+    block:
+
+    - name: vayore task 1
+      debug:
+        msg: "hello world"
+      tags: money
+
+    - name: vayore task 2
+      debug:
+        msg: "hello Kasi"
+      tags: stack
+  tags: Roles

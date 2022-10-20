@@ -1,0 +1,8 @@
+---
+# defaults file for stanton
+  job: false
+  job2: true
+  deploy: false
+  Roles: false
+
+  force: false

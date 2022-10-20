@@ -1,0 +1,6 @@
+localhost
+
+[users]
+3.81.202.121 ansible_user=ec2-user
+35.153.159.219 ansible_user=ec2-user
+54.145.74.145 ansible_user=ec2-user
